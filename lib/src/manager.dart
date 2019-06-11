@@ -206,10 +206,10 @@ class Manager extends EventEmitter {
   open({callback, Map opts}) => connect(callback: callback, opts: opts);
 
   connect({callback, Map opts}) {
-    _logger.fine('readyState $readyState');
+    _logger.finer('readyState $readyState');
     if (this.readyState.contains('open')) return this;
 
-    _logger.fine('opening $uri');
+    _logger.finer('opening $uri');
     this.engine = new Engine.Socket(this.uri, this.options);
     var socket = this.engine;
     this.readyState = 'opening';
@@ -223,7 +223,7 @@ class Manager extends EventEmitter {
 
     // emit `connect_error`
     var errorSub = ON.on(socket, 'error', (data) {
-      _logger.fine('connect_error');
+      _logger.warning('connect_error: $data');
       cleanup();
       readyState = 'closed';
       emitAll('connect_error', data);
@@ -238,11 +238,11 @@ class Manager extends EventEmitter {
     // emit `connect_timeout`
     if (this._timeout != null) {
       var timeout = this._timeout;
-      _logger.fine('connect attempt will timeout after $timeout');
+      _logger.finer('connect attempt will timeout after $timeout');
 
       // set timer
       var timer = new Timer(new Duration(milliseconds: timeout), () {
-        _logger.fine('connect attempt timed out after $timeout');
+        _logger.finer('connect attempt timed out after $timeout');
         openSub.destroy();
         socket.close();
         socket.emit('error', 'timeout');
@@ -264,7 +264,7 @@ class Manager extends EventEmitter {
      * @api private
      */
   onopen([_]) {
-    _logger.fine('open');
+    _logger.finer('open');
 
     // clear old subs
     this.cleanup();
@@ -327,7 +327,7 @@ class Manager extends EventEmitter {
      * @api private
      */
   onerror(err) {
-    _logger.fine('error $err');
+    _logger.warning('onerror $err');
     this.emitAll('error', err);
   }
 
@@ -382,7 +382,7 @@ class Manager extends EventEmitter {
      * @api private
      */
   packet(Map packet) {
-    _logger.fine('writing packet $packet');
+    _logger.finer('writing packet $packet');
     if (packet.containsKey('query') && packet['type'] == 0)
       packet['nsp'] += '''?${packet['query']}''';
 
@@ -421,7 +421,7 @@ class Manager extends EventEmitter {
      * @api private
      */
   cleanup() {
-    _logger.fine('cleanup');
+    _logger.finer('cleanup');
 
     var subsLength = this.subs.length;
     for (var i = 0; i < subsLength; i++) {
@@ -444,7 +444,7 @@ class Manager extends EventEmitter {
   close() => disconnect();
 
   disconnect() {
-    _logger.fine('disconnect');
+    _logger.finer('disconnect');
     this.skipReconnect = true;
     this.reconnecting = false;
     if ('opening' == this.readyState) {
@@ -463,7 +463,7 @@ class Manager extends EventEmitter {
      * @api private
      */
   onclose(error) {
-    _logger.fine('onclose');
+    _logger.finer('onclose');
 
     this.cleanup();
     this.backoff.reset();
@@ -484,19 +484,19 @@ class Manager extends EventEmitter {
     if (this.reconnecting || this.skipReconnect) return this;
 
     if (this.backoff.attempts >= this._reconnectionAttempts) {
-      _logger.fine('reconnect failed');
+      _logger.finer('reconnect failed');
       this.backoff.reset();
       this.emitAll('reconnect_failed');
       this.reconnecting = false;
     } else {
       var delay = this.backoff.duration;
-      _logger.fine('will wait %dms before reconnect attempt', delay);
+      _logger.finer('will wait %dms before reconnect attempt', delay);
 
       this.reconnecting = true;
       var timer = new Timer(new Duration(milliseconds: delay), () {
         if (skipReconnect) return;
 
-        _logger.fine('attempting reconnect');
+        _logger.finer('attempting reconnect');
         emitAll('reconnect_attempt', backoff.attempts);
         emitAll('reconnecting', backoff.attempts);
 
@@ -505,12 +505,12 @@ class Manager extends EventEmitter {
 
         open(callback: ([err]) {
           if (err != null) {
-            _logger.fine('reconnect attempt error');
+            _logger.warning('reconnect attempt error');
             reconnecting = false;
             reconnect();
             emitAll('reconnect_error', err['data']);
           } else {
-            _logger.fine('reconnect success');
+            _logger.finer('reconnect success');
             onreconnect();
           }
         });

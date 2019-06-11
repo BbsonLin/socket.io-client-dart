@@ -56,7 +56,7 @@ _lookup(uri, opts) {
   var io;
 
   if (newConnection) {
-    _logger.fine('ignoring socket cache for $uri');
+    _logger.finer('ignoring socket cache for $uri');
     io = new Manager(uri: uri, options: opts);
   } else {
     io = cache[id] ??= new Manager(uri: uri, options: opts);

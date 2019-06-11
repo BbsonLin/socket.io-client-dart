@@ -164,7 +164,7 @@ class Socket extends EventEmitter {
 
       // event ack callback
       if (ack != null) {
-        _logger.fine('emitting packet with ack id $ids');
+        _logger.finer('emitting packet with ack id $ids');
         this.acks['${this.ids}'] = ack;
         packet['id'] = '${this.ids++}';
       }
@@ -195,7 +195,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   onopen([_]) {
-    _logger.fine('transport is open - connecting');
+    _logger.finer('transport is open - connecting');
 
     // write connect packet if necessary
     if ('/' != this.nsp) {
@@ -214,7 +214,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   onclose(reason) {
-    _logger.fine('close ($reason)');
+    _logger.finer('close ($reason)');
     this.emit('disconnecting', reason);
     this.connected = false;
     this.disconnected = true;
@@ -300,7 +300,7 @@ class Socket extends EventEmitter {
       // prevent double callbacks
       if (sent) return;
       sent = true;
-      _logger.fine('sending ack $_');
+      _logger.finer('sending ack $_');
 
       packet({
         'type': ACK,
@@ -319,10 +319,10 @@ class Socket extends EventEmitter {
   onack(Map packet) {
     var ack = this.acks.remove(packet['id']);
     if (ack is Function) {
-      _logger.fine('''calling ack ${packet['id']} with ${packet['data']}''');
+      _logger.finer('''calling ack ${packet['id']} with ${packet['data']}''');
       Function.apply(ack, packet['data']);
     } else {
-      _logger.fine('''bad ack ${packet['id']}''');
+      _logger.finer('''bad ack ${packet['id']}''');
     }
   }
 
@@ -362,7 +362,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   ondisconnect() {
-    _logger.fine('server disconnect (${this.nsp})');
+    _logger.finer('server disconnect (${this.nsp})');
     this.destroy();
     this.onclose('io server disconnect');
   }
@@ -397,7 +397,7 @@ class Socket extends EventEmitter {
 
   disconnect() {
     if (this.connected == true) {
-      _logger.fine('performing disconnect (${this.nsp})');
+      _logger.finer('performing disconnect (${this.nsp})');
       this.packet({'type': DISCONNECT});
     }
 
