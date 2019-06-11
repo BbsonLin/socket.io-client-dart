@@ -61,7 +61,7 @@ abstract class PollingTransport extends Transport {
     this.readyState = 'pausing';
 
     var pause = () {
-      _logger.fine('paused');
+      _logger.finer('paused');
       self.readyState = 'paused';
       onPause();
     };
@@ -70,19 +70,19 @@ abstract class PollingTransport extends Transport {
       var total = 0;
 
       if (this.polling == true) {
-        _logger.fine('we are currently polling - waiting to pause');
+        _logger.finer('we are currently polling - waiting to pause');
         total++;
         this.once('pollComplete', (_) {
-          _logger.fine('pre-pause polling complete');
+          _logger.finer('pre-pause polling complete');
           if (--total == 0) pause();
         });
       }
 
       if (this.writable != true) {
-        _logger.fine('we are currently writing - waiting to pause');
+        _logger.finer('we are currently writing - waiting to pause');
         total++;
         this.once('drain', (_) {
-          _logger.fine('pre-pause writing complete');
+          _logger.finer('pre-pause writing complete');
           if (--total == 0) pause();
         });
       }
@@ -97,7 +97,7 @@ abstract class PollingTransport extends Transport {
    * @api public
    */
   poll() {
-    _logger.fine('polling');
+    _logger.finer('polling');
     this.polling = true;
     this.doPoll();
     this.emit('poll');
@@ -110,7 +110,7 @@ abstract class PollingTransport extends Transport {
    */
   onData(data) {
     var self = this;
-    _logger.fine('polling got data $data');
+    _logger.finer('polling got data $data');
     var callback = (packet, [index, total]) {
       // if its the first message we consider the transport open
       if ('opening' == self.readyState) {
@@ -140,7 +140,7 @@ abstract class PollingTransport extends Transport {
       if ('open' == this.readyState) {
         this.poll();
       } else {
-        _logger.fine('ignoring poll - transport state "${this.readyState}"');
+        _logger.finer('ignoring poll - transport state "${this.readyState}"');
       }
     }
   }
@@ -154,19 +154,19 @@ abstract class PollingTransport extends Transport {
     var self = this;
 
     var close = ([_]) {
-      _logger.fine('writing close packet');
+      _logger.finer('writing close packet');
       self.write([
         {'type': 'close'}
       ]);
     };
 
     if ('open' == this.readyState) {
-      _logger.fine('transport open - closing');
+      _logger.finer('transport open - closing');
       close();
     } else {
       // in case we're trying to close while
       // handshaking is in progress (GH-164)
-      _logger.fine('transport not open - deferring close');
+      _logger.finer('transport not open - deferring close');
       this.once('open', close);
     }
   }

@@ -110,7 +110,7 @@ class XHRTransport extends PollingTransport {
    * @api private
    */
   doPoll() {
-    _logger.fine('xhr poll');
+    _logger.finer('xhr poll');
     var req = this.request();
     req.on('data', (data) {
       onData(data);
@@ -171,7 +171,7 @@ class Request extends EventEmitter {
     var self = this;
 
     try {
-      _logger.fine('xhr open ${this.method}: ${this.uri}');
+      _logger.finer('xhr open ${this.method}: ${this.uri}');
       xhr.open(this.method, this.uri, async: this.async);
 
 //try {
@@ -239,7 +239,7 @@ class Request extends EventEmitter {
       });
       /*}*/
 
-      _logger.fine('xhr data ${this.data}');
+      _logger.finer('xhr data ${this.data}');
       xhr.send(this.data);
     } catch (e) {
 // Need to defer since .create() is called directly fhrom the constructor

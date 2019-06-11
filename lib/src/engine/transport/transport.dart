@@ -63,7 +63,7 @@ abstract class Transport extends EventEmitter {
     if (this.hasListeners('error')) {
       this.emit('error', {'msg': msg, 'desc': desc, 'type': 'TransportError'});
     } else {
-      _logger.fine('ignored transport error $msg ($desc)');
+      _logger.finer('ignored transport error $msg ($desc)');
     }
   }
 

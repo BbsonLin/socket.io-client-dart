@@ -102,7 +102,7 @@ class WebSocketTransport extends Transport {
           // TypeError is thrown when passing the second argument on Safari
           ws.send(data);
         } catch (e) {
-          _logger.fine('websocket closed before onclose event');
+          _logger.finer('websocket closed before onclose event');
         }
 
         if (--total == 0) done();

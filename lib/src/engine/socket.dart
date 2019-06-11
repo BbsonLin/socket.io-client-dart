@@ -201,7 +201,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   createTransport(name, [options]) {
-    _logger.fine('creating transport "$name"');
+    _logger.finer('creating transport "$name"');
     var query = new Map.from(this.query);
 
     // append engine.io protocol identifier
@@ -290,10 +290,10 @@ class Socket extends EventEmitter {
    * @api private
    */
   setTransport(transport) {
-    _logger.fine('setting transport ${transport?.name}');
+    _logger.finer('setting transport ${transport?.name}');
 
     if (this.transport != null) {
-      _logger.fine('clearing existing transport ${this.transport?.name}');
+      _logger.finer('clearing existing transport ${this.transport?.name}');
       this.transport.clearListeners();
     }
 
@@ -315,7 +315,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   probe(name) {
-    _logger.fine('probing transport "$name"');
+    _logger.finer('probing transport "$name"');
     var transport = this.createTransport(name, {'probe': true});
     var failed = false;
     var cleanup;
@@ -329,25 +329,25 @@ class Socket extends EventEmitter {
       }
       if (failed) return;
 
-      _logger.fine('probe transport "$name" opened');
+      _logger.finer('probe transport "$name" opened');
       transport.send([
         {'type': 'ping', 'data': 'probe'}
       ]);
       transport.once('packet', (msg) {
         if (failed) return;
         if ('pong' == msg['type'] && 'probe' == msg['data']) {
-          _logger.fine('probe transport "$name" pong');
+          _logger.finer('probe transport "$name" pong');
           upgrading = true;
           emit('upgrading', transport);
           if (transport == null) return;
           priorWebsocketSuccess = 'websocket' == transport.name;
 
-          _logger.fine('pausing current transport "${transport?.name}"');
+          _logger.finer('pausing current transport "${transport?.name}"');
           if (this.transport is PollingTransport) {
             (this.transport as PollingTransport).pause(() {
               if (failed) return;
               if ('closed' == readyState) return;
-              _logger.fine('changing transport and sending upgrade packet');
+              _logger.finer('changing transport and sending upgrade packet');
 
               cleanup();
 
@@ -362,7 +362,7 @@ class Socket extends EventEmitter {
             });
           }
         } else {
-          _logger.fine('probe transport "$name" failed');
+          _logger.finer('probe transport "$name" failed');
           emit('upgradeError',
               {'error': 'probe error', 'transport': transport.name});
         }
@@ -386,7 +386,7 @@ class Socket extends EventEmitter {
       final oldTransport = transport;
       freezeTransport();
 
-      _logger.fine('probe transport "$name" failed because of error: $err');
+      _logger.warning('probe transport "$name" failed because of error: $err');
 
       emit('upgradeError',
           {'error': 'probe error: $err', 'transport': oldTransport.name});
@@ -400,7 +400,7 @@ class Socket extends EventEmitter {
     // When the socket is upgraded while we're probing
     var onupgrade = (to) {
       if (transport != null && to.name != transport.name) {
-        _logger.fine('"${to?.name}" works - aborting "${transport?.name}"');
+        _logger.finer('"${to?.name}" works - aborting "${transport?.name}"');
         freezeTransport();
       }
     };
@@ -430,7 +430,7 @@ class Socket extends EventEmitter {
    * @api public
    */
   onOpen() {
-    _logger.fine('socket open');
+    _logger.finer('socket open');
     this.readyState = 'open';
     priorWebsocketSuccess = 'websocket' == this.transport.name;
     this.emit('open');
@@ -441,7 +441,7 @@ class Socket extends EventEmitter {
     if ('open' == this.readyState &&
         this.upgrade == true &&
         this.transport is PollingTransport) {
-      _logger.fine('starting upgrade probes');
+      _logger.finer('starting upgrade probes');
       for (var i = 0, l = this.upgrades.length; i < l; i++) {
         this.probe(this.upgrades[i]);
       }
@@ -459,7 +459,7 @@ class Socket extends EventEmitter {
         'closing' == this.readyState) {
       var type = packet['type'];
       var data = packet['data'];
-      _logger.fine('socket receive: type "$type", data "$data"');
+      _logger.finer('socket receive: type "$type", data "$data"');
 
       this.emit('packet', packet);
 
@@ -584,7 +584,7 @@ class Socket extends EventEmitter {
         this.transport.writable == true &&
         this.upgrading != true &&
         this.writeBuffer.isNotEmpty) {
-      _logger.fine('flushing ${this.writeBuffer.length} packets in socket');
+      _logger.finer('flushing ${this.writeBuffer.length} packets in socket');
       this.transport.send(this.writeBuffer);
       // keep track of current length of writeBuffer
       // splice writeBuffer and callbackBuffer on `drain`
@@ -640,7 +640,7 @@ class Socket extends EventEmitter {
   close() {
     var close = () {
       onClose('forced close');
-      _logger.fine('socket closing - telling transport to close');
+      _logger.finer('socket closing - telling transport to close');
       transport.close();
     };
 
@@ -687,7 +687,7 @@ class Socket extends EventEmitter {
    * @api private
    */
   onError(err) {
-    _logger.fine('socket error $err');
+    _logger.warning('socket error $err');
     priorWebsocketSuccess = false;
     this.emit('error', err);
     this.onClose('transport error', err);
@@ -702,7 +702,7 @@ class Socket extends EventEmitter {
     if ('opening' == this.readyState ||
         'open' == this.readyState ||
         'closing' == this.readyState) {
-      _logger.fine('socket close with reason: "$reason"');
+      _logger.finer('socket close with reason: "$reason"');
 
       // clear timers
       this.pingIntervalTimer?.cancel();
